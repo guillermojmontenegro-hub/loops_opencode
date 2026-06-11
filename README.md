@@ -23,12 +23,26 @@ src/
     tui.py
 ```
 
+## Architecture
+
+- CLI entrypoint: `src/loops_opencode/cli.py`
+- Shared execution engine: `src/loops_opencode/runner.py`
+- Textual TUI: `src/loops_opencode/tui.py`
+- Prompt-based fallback TUI: `src/loops_opencode/simple_tui.py`
+- Portable shell launchers: `bin/`
+
 ## Install
 
-Install Python dependencies:
+Recommended with `uv`:
 
 ```bash
-python -m pip install -e .
+uv sync --extra tui
+```
+
+Alternative with pip:
+
+```bash
+python -m pip install -e ".[tui]"
 ```
 
 Copy the command into your opencode commands directory:
@@ -93,7 +107,13 @@ Every path in the default config is relative. CLI arguments override config valu
 
 ## TUI
 
-The interactive TUI uses Textual. After installing dependencies, run:
+The interactive TUI uses Textual, installed through the `tui` extra. With `uv`:
+
+```bash
+uv run --extra tui loops-opencode-tui
+```
+
+Or use the wrapper:
 
 Linux/macOS:
 
@@ -124,6 +144,12 @@ The TUI lets you:
 
 If Textual is not installed, `bin/loop-tui.*` falls back to the simple prompt-based TUI.
 
+To run the fallback directly:
+
+```bash
+PYTHONPATH=src python -m loops_opencode.simple_tui
+```
+
 To provide selectable options, edit `config/loop.config.json`:
 
 ```json
@@ -141,6 +167,12 @@ Linux/macOS:
 
 ```bash
 bin/run-opencode-loop.sh "objective"
+```
+
+With `uv` directly:
+
+```bash
+uv run loops-opencode "objective"
 ```
 
 Windows:
