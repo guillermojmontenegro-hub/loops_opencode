@@ -139,6 +139,7 @@ The TUI lets you:
 - choose start or continue mode,
 - select max iterations and sleep,
 - select MCP and skill policies,
+- multi-select MCPs and skills from configured option lists,
 - select model and agent values from config-provided options or manual input,
 - run the loop and see iteration output in the terminal.
 
@@ -160,6 +161,8 @@ To provide selectable options, edit `config/loop.config.json`:
   "agent_options": ["<agent-name>"]
 }
 ```
+
+MCP and skill option lists are multi-selectable in the TUI. Manual comma-separated values can be combined with selected options.
 
 ## Usage
 

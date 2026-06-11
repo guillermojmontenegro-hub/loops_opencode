@@ -10,7 +10,7 @@ try:
     from textual import work
     from textual.app import App, ComposeResult
     from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import Button, Checkbox, Footer, Header, Input, Label, RichLog, Select, Static, TextArea
+    from textual.widgets import Button, Checkbox, Footer, Header, Input, Label, RichLog, Select, SelectionList, Static, TextArea
 except ModuleNotFoundError:  # pragma: no cover - exercised only when optional dep is missing.
     from .simple_tui import main
 else:
@@ -93,6 +93,12 @@ else:
             height: 6;
         }
 
+        SelectionList {
+            height: 6;
+            border: round $surface;
+            margin-bottom: 1;
+        }
+
         #log {
             height: 1fr;
             border: round $accent;
@@ -126,6 +132,10 @@ else:
             skills = config_list(config.skill_options)
             models = config_list(config.model_options)
             agents = config_list(config.agent_options)
+            default_mcps = set(config_list(config.default_allowed_mcps))
+            default_skills = set(config_list(config.default_allowed_skills))
+            mcp_policy = "allowlist" if default_mcps else "default"
+            skill_policy = "allowlist" if default_skills else "default"
 
             yield Header(show_clock=True)
             with Horizontal(id="body"):
@@ -161,13 +171,15 @@ else:
 
                     yield Label("MCP policy")
                     with Container(classes="pair"):
-                        yield Select(option_pairs(mcps, include_default=True, include_none=True), value="default", id="mcp_policy")
+                        yield Select(option_pairs(["default", "allowlist", "none"], include_manual=False), value=mcp_policy, id="mcp_policy")
                         yield Input("", id="mcp_manual", placeholder="Manual MCP list")
+                    yield SelectionList(*[(mcp, mcp, mcp in default_mcps) for mcp in mcps], id="mcp_options")
 
                     yield Label("Skill policy")
                     with Container(classes="pair"):
-                        yield Select(option_pairs(skills, include_default=True, include_none=True), value="default", id="skill_policy")
+                        yield Select(option_pairs(["default", "allowlist", "none"], include_manual=False), value=skill_policy, id="skill_policy")
                         yield Input("", id="skill_manual", placeholder="Manual skill list")
+                    yield SelectionList(*[(skill, skill, skill in default_skills) for skill in skills], id="skill_options")
 
                     with Container(classes="row"):
                         yield Button("Run loop", id="run", variant="success")
@@ -288,8 +300,8 @@ else:
         def build_selection(self) -> LoopSelection:
             mcp_policy = self.selected_value("#mcp_policy")
             skill_policy = self.selected_value("#skill_policy")
-            mcps = self.policy_values(mcp_policy, self.input_value("#mcp_manual"))
-            skills = self.policy_values(skill_policy, self.input_value("#skill_manual"))
+            mcps = self.policy_values(mcp_policy, "#mcp_options", self.input_value("#mcp_manual"))
+            skills = self.policy_values(skill_policy, "#skill_options", self.input_value("#skill_manual"))
             return LoopSelection(
                 mcps=mcps,
                 skills=skills,
@@ -297,13 +309,18 @@ else:
                 no_skills=skill_policy == "none",
             )
 
-        @staticmethod
-        def policy_values(policy: str, manual: str) -> tuple[str, ...]:
+        def policy_values(self, policy: str, selection_selector: str, manual: str) -> tuple[str, ...]:
             if policy in ("default", "none"):
                 return ()
-            if policy == "manual":
-                return csv_values(manual)
-            return (policy,) if policy else ()
+            selection_list = self.query_one(selection_selector, SelectionList)
+            selected_values = {str(value) for value in selection_list.selected}
+            selected = tuple(str(option.value) for option in selection_list.options if str(option.value) in selected_values)
+            manual_values = csv_values(manual)
+            merged = [*selected]
+            for value in manual_values:
+                if value not in merged:
+                    merged.append(value)
+            return tuple(merged)
 
         @staticmethod
         def none_if_empty_or_none(value: str) -> str | None:
