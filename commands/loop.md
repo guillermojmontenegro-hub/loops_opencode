@@ -1,20 +1,11 @@
 ---
 description: Ejecuta un objetivo largo con checkpoints y continuidad entre sesiones
-agent: assistant-general
 ---
 
 Run the loop protocol for a long-running objective.
 
 Arguments: `$ARGUMENTS`
 Current directory: !`pwd`
-Configured local model context windows:
-!`node -e 'const fs=require("fs"); const candidates=["opencode.json",".opencode/opencode.json","config/opencode.json"]; const p=candidates.find((x)=>fs.existsSync(x)); if(!p){ console.log("unknown (no relative opencode config found)"); process.exit(0); } const c=JSON.parse(fs.readFileSync(p,"utf8")); for (const [provider,pc] of Object.entries(c.provider||{})) for (const [model,mc] of Object.entries(pc.models||{})) console.log(`${provider}/${model}: context=${mc.limit?.context ?? "unknown"} output=${mc.limit?.output ?? "unknown"}`)'`
-
-Configured MCP servers:
-!`node -e 'const fs=require("fs"); const candidates=["opencode.json",".opencode/opencode.json","config/opencode.json"]; const p=candidates.find((x)=>fs.existsSync(x)); if(!p){ console.log("unknown (no relative opencode config found)"); process.exit(0); } const c=JSON.parse(fs.readFileSync(p,"utf8")); for (const [name,mcp] of Object.entries(c.mcp||{})) console.log(`${name}: ${mcp.enabled === false || mcp.disabled === true ? "disabled" : "enabled"}`)'`
-
-Available local skills:
-!`find .opencode/skills .agents/skills skills -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort -u || true`
 
 Existing loop state, if any:
 !`mkdir -p .opencode/loop && test -f .opencode/loop/state.md && cat .opencode/loop/state.md || echo "no existing loop state"`
@@ -38,13 +29,13 @@ Protocol:
 
 2. Enforce MCP and skill selection.
 - Persist the selected MCPs and skills in `.opencode/loop/state.md`.
-- `allowed_mcps: default` means use the MCPs enabled by opencode config when useful.
+- `allowed_mcps: default` means use normal opencode MCP behavior for this installation.
 - `allowed_mcps: none` means do not use MCP-backed tools or MCP-derived commands.
-- A comma-separated `allowed_mcps` list means use only those MCP servers. If the objective appears to require an unlisted MCP, stop and report the missing MCP instead of using it.
+- A comma-separated `allowed_mcps` list means use only those MCP servers. Do not inspect, invoke, or rely on MCPs outside that list. If the objective appears to require an unlisted MCP, stop and report the missing MCP instead of using it.
 - `allowed_skills: default` means use normal skill routing.
 - `allowed_skills: none` means do not use skills.
-- A comma-separated `allowed_skills` list means use only those skills. If another skill would normally trigger, mention it as not allowed and continue without it unless the task cannot be completed safely.
-- If a requested MCP or skill is not available, stop before substantive work and report the invalid selection.
+- A comma-separated `allowed_skills` list means use only those skills. Do not inspect, load, or rely on skills outside that list. If another skill would normally trigger, mention it as not allowed and continue without it unless the task cannot be completed safely.
+- If a requested MCP or skill is not available in this opencode installation, stop before substantive work and report the invalid selection.
 
 3. Persist state before doing substantial work.
 - Ensure `.opencode/loop/` exists.
@@ -85,14 +76,14 @@ Protocol:
   - failed attempts and why they failed,
   - commands run and meaningful results,
   - next best action.
-- Run `/aprender` with the durable, reusable learning when it is genuinely reusable beyond this loop.
-- If invoking another slash command is not available from inside this command, write the reusable learning into `.opencode/loop/learned.md` and explicitly tell the user to run `/aprender <summary>` after the checkpoint.
+- Do not call external learning commands. This command must work in a fresh opencode installation with no custom commands.
+- If the user has their own learning system, `.opencode/loop/learned.md` is the handoff artifact they can import separately.
 
 7. Session rollover.
 - A markdown command cannot reliably force the TUI to execute `/new` or switch sessions by itself.
 - When checkpointing for context rollover, return only:
   - checkpoint file paths,
-  - whether `/aprender` was run or the exact `/aprender ...` command to run,
+  - current `allowed_mcps` and `allowed_skills`,
   - exact resume command:
     `/new`
     `/loop --continue`
@@ -110,5 +101,5 @@ Protocol:
 Constraints:
 - Do not claim automatic `/new` execution unless it actually happened.
 - Do not overwrite unrelated `.opencode/` files.
-- Do not use `/aprender` for one-off details with no reuse value.
+- Do not depend on custom learning commands.
 - Do not keep working past a checkpoint decision just because there is more to do.

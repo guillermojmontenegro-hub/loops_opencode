@@ -9,5 +9,7 @@
   "default_model": null,
   "default_agent": null,
   "default_attach_url": null,
+  "default_allowed_mcps": [],
+  "default_allowed_skills": [],
   "dangerously_skip_permissions": false
 }

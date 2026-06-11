@@ -65,11 +65,15 @@ Config keys:
   "default_model": null,
   "default_agent": null,
   "default_attach_url": null,
+  "default_allowed_mcps": [],
+  "default_allowed_skills": [],
   "dangerously_skip_permissions": false
 }
 ```
 
 Every path in the default config is relative. CLI arguments override config values.
+
+`default_allowed_mcps` and `default_allowed_skills` are optional allowlists. Empty lists mean "use opencode defaults". If you pass `--mcp` or `--skill`, the CLI selection overrides the config selection for that run.
 
 ## Usage
 
@@ -110,6 +114,15 @@ PYTHONPATH=src python3 -m loops_opencode.cli "objective"
 ```
 
 ## MCPs And Skills
+
+By default, the runner sends:
+
+```text
+allowed_mcps: default
+allowed_skills: default
+```
+
+That means normal opencode behavior. When you pass `--mcp` or `--skill`, `/loop` receives only those names and must not inspect or use anything outside the allowlist.
 
 Allow only selected MCPs and skills:
 
@@ -157,3 +170,4 @@ status: complete
 - Each iteration starts a fresh opencode session because the runner does not pass opencode `--continue` or `--session`.
 - Continuity lives in `.opencode/loop/`, not in chat context.
 - MCP and skill selection is enforced by the `/loop` command protocol. The opencode CLI does not currently expose native `--mcp` or `--skill` flags.
+- `/loop` does not depend on custom learning commands. Durable loop learnings are written to `.opencode/loop/learned.md`.

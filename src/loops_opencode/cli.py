@@ -49,6 +49,10 @@ def resolve_path(project_dir: Path, value: str) -> Path:
     return path if path.is_absolute() else project_dir / path
 
 
+def config_list(value: list[str] | None) -> list[str]:
+    return value if value else []
+
+
 def build_options(args: argparse.Namespace) -> RunnerOptions:
     config_path = Path(args.config) if args.config else first_existing_config(
         [Path("config/loop.config.json"), Path("config/loop.config.example.json")]
@@ -60,6 +64,8 @@ def build_options(args: argparse.Namespace) -> RunnerOptions:
     runs_value = merge_value(args.runs_dir, config.runs_dir)
 
     skip_permissions = bool(config.dangerously_skip_permissions or args.dangerously_skip_permissions)
+    selected_mcps = args.mcp if args.mcp else config_list(config.default_allowed_mcps)
+    selected_skills = args.skill if args.skill else config_list(config.default_allowed_skills)
 
     return RunnerOptions(
         objective="" if args.resume else " ".join(args.objective),
@@ -77,8 +83,8 @@ def build_options(args: argparse.Namespace) -> RunnerOptions:
         dangerously_skip_permissions=skip_permissions,
         dry_run=args.dry_run,
         selection=LoopSelection(
-            mcps=split_csv(args.mcp),
-            skills=split_csv(args.skill),
+            mcps=split_csv(selected_mcps),
+            skills=split_csv(selected_skills),
             no_mcp=args.no_mcp,
             no_skills=args.no_skills,
         ),

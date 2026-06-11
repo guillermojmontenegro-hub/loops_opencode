@@ -18,6 +18,8 @@ class LoopConfig:
     default_model: str | None = None
     default_agent: str | None = None
     default_attach_url: str | None = None
+    default_allowed_mcps: list[str] | None = None
+    default_allowed_skills: list[str] | None = None
     dangerously_skip_permissions: bool = False
 
 
