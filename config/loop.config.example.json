@@ -11,5 +11,9 @@
   "default_attach_url": null,
   "default_allowed_mcps": [],
   "default_allowed_skills": [],
+  "mcp_options": [],
+  "skill_options": [],
+  "model_options": [],
+  "agent_options": [],
   "dangerously_skip_permissions": false
 }

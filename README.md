@@ -6,6 +6,8 @@ Portable runner for long opencode tasks. It runs `/loop` in fresh opencode sessi
 
 ```text
 bin/
+  loop-tui.sh
+  loop-tui.bat
   run-opencode-loop.sh
   run-opencode-loop.bat
 commands/
@@ -17,6 +19,7 @@ src/
     cli.py
     config.py
     runner.py
+    tui.py
 ```
 
 ## Install
@@ -67,6 +70,10 @@ Config keys:
   "default_attach_url": null,
   "default_allowed_mcps": [],
   "default_allowed_skills": [],
+  "mcp_options": [],
+  "skill_options": [],
+  "model_options": [],
+  "agent_options": [],
   "dangerously_skip_permissions": false
 }
 ```
@@ -74,6 +81,42 @@ Config keys:
 Every path in the default config is relative. CLI arguments override config values.
 
 `default_allowed_mcps` and `default_allowed_skills` are optional allowlists. Empty lists mean "use opencode defaults". If you pass `--mcp` or `--skill`, the CLI selection overrides the config selection for that run.
+
+`mcp_options`, `skill_options`, `model_options`, and `agent_options` are optional menu choices for the TUI. They are intentionally empty by default because names are installation-specific.
+
+## TUI
+
+Linux/macOS:
+
+```bash
+bin/loop-tui.sh
+```
+
+Windows:
+
+```bat
+bin\loop-tui.bat
+```
+
+The TUI lets you:
+
+- enter the objective,
+- choose start or continue mode,
+- select max iterations and sleep,
+- select MCP and skill policies,
+- select model and agent values from config-provided options or manual input,
+- run the loop and see iteration output in the terminal.
+
+To provide selectable options, edit `config/loop.config.json`:
+
+```json
+{
+  "mcp_options": ["<mcp-a>", "<mcp-b>"],
+  "skill_options": ["<skill-a>", "<skill-b>"],
+  "model_options": ["<provider>/<model>"],
+  "agent_options": ["<agent-name>"]
+}
+```
 
 ## Usage
 

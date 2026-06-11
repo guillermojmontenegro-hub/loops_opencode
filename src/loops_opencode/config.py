@@ -20,6 +20,10 @@ class LoopConfig:
     default_attach_url: str | None = None
     default_allowed_mcps: list[str] | None = None
     default_allowed_skills: list[str] | None = None
+    mcp_options: list[str] | None = None
+    skill_options: list[str] | None = None
+    model_options: list[str] | None = None
+    agent_options: list[str] | None = None
     dangerously_skip_permissions: bool = False
 
 
