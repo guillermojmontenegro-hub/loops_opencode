@@ -14,6 +14,7 @@ commands/
   loop.md
 config/
   loop.config.example.json
+pyproject.toml
 src/
   loops_opencode/
     cli.py
@@ -23,6 +24,12 @@ src/
 ```
 
 ## Install
+
+Install Python dependencies:
+
+```bash
+python -m pip install -e .
+```
 
 Copy the command into your opencode commands directory:
 
@@ -86,6 +93,8 @@ Every path in the default config is relative. CLI arguments override config valu
 
 ## TUI
 
+The interactive TUI uses Textual. After installing dependencies, run:
+
 Linux/macOS:
 
 ```bash
@@ -98,6 +107,12 @@ Windows:
 bin\loop-tui.bat
 ```
 
+Or run the installed console command:
+
+```bash
+loops-opencode-tui
+```
+
 The TUI lets you:
 
 - enter the objective,
@@ -106,6 +121,8 @@ The TUI lets you:
 - select MCP and skill policies,
 - select model and agent values from config-provided options or manual input,
 - run the loop and see iteration output in the terminal.
+
+If Textual is not installed, `bin/loop-tui.*` falls back to the simple prompt-based TUI.
 
 To provide selectable options, edit `config/loop.config.json`:
 

@@ -9,6 +9,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 
 STATUS_RE = re.compile(r"^\s*(?:[-*]\s*)?(?:`?status`?\s*:|status\s*:)\s*`?([a-zA-Z_-]+)`?", re.MULTILINE)
@@ -121,7 +122,19 @@ def write_log(path: Path, command: list[str], result: subprocess.CompletedProces
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def run_loop(options: RunnerOptions) -> int:
+def run_loop(options: RunnerOptions, emit: Callable[[str], None] | None = None) -> int:
+    def out(message: str) -> None:
+        if emit:
+            emit(message)
+        else:
+            print(message)
+
+    def err(message: str) -> None:
+        if emit:
+            emit(message)
+        else:
+            print(message, file=sys.stderr)
+
     if options.max_iterations < 1:
         raise ValueError("max_iterations must be >= 1")
 
@@ -129,13 +142,13 @@ def run_loop(options: RunnerOptions) -> int:
     run_dir = options.runs_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"project_dir={options.project_dir}")
-    print(f"state_path={options.state_path}")
-    print(f"run_dir={run_dir}")
+    out(f"project_dir={options.project_dir}")
+    out(f"state_path={options.state_path}")
+    out(f"run_dir={run_dir}")
 
     current_status = read_status(options.state_path)
     if options.resume and current_status == "complete":
-        print("Loop state is already complete; nothing to run.")
+        out("Loop state is already complete; nothing to run.")
         return 0
 
     for iteration in range(1, options.max_iterations + 1):
@@ -144,7 +157,7 @@ def run_loop(options: RunnerOptions) -> int:
         command = build_command(options, loop_args)
         log_path = run_dir / f"iteration_{iteration:03d}.log"
 
-        print(f"\n[{iteration}/{options.max_iterations}] {shlex.join(command)}")
+        out(f"\n[{iteration}/{options.max_iterations}] {shlex.join(command)}")
         if options.dry_run:
             write_log(log_path, command, None)
             continue
@@ -160,26 +173,26 @@ def run_loop(options: RunnerOptions) -> int:
         write_log(log_path, command, result)
 
         if result.stdout:
-            print(result.stdout.rstrip())
+            out(result.stdout.rstrip())
         if result.stderr:
-            print(result.stderr.rstrip(), file=sys.stderr)
+            err(result.stderr.rstrip())
 
         if result.returncode != 0:
-            print(f"opencode failed with exit code {result.returncode}; see {log_path}", file=sys.stderr)
+            err(f"opencode failed with exit code {result.returncode}; see {log_path}")
             return result.returncode
 
         status = read_status(options.state_path)
-        print(f"state_status={status or 'unknown'}")
+        out(f"state_status={status or 'unknown'}")
         if status == "complete":
-            print("Loop objective marked complete.")
+            out("Loop objective marked complete.")
             return 0
 
         time.sleep(options.sleep_seconds)
 
     if options.dry_run:
-        print("Dry-run complete; no opencode sessions were started.")
+        out("Dry-run complete; no opencode sessions were started.")
         return 0
 
-    print(f"Reached --max-iterations={options.max_iterations} without status: complete.", file=sys.stderr)
-    print("Resume later with the same command plus --continue.", file=sys.stderr)
+    err(f"Reached --max-iterations={options.max_iterations} without status: complete.")
+    err("Resume later with the same command plus --continue.")
     return 2
