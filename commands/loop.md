@@ -31,11 +31,11 @@ Protocol:
 - Persist the selected MCPs and skills in `.opencode/loop/state.md`.
 - `allowed_mcps: default` means use normal opencode MCP behavior for this installation.
 - `allowed_mcps: none` means do not use MCP-backed tools or MCP-derived commands.
-- A comma-separated `allowed_mcps` list means use only those MCP servers. Do not inspect, invoke, or rely on MCPs outside that list. If the objective appears to require an unlisted MCP, stop and report the missing MCP instead of using it.
+- A comma-separated `allowed_mcps` list is a user-provided allowlist. Use only MCP servers whose names are in that list. Do not inspect, invoke, or rely on MCPs outside that list. If the objective appears to require an unlisted MCP, stop and report which capability is missing instead of using it.
 - `allowed_skills: default` means use normal skill routing.
 - `allowed_skills: none` means do not use skills.
-- A comma-separated `allowed_skills` list means use only those skills. Do not inspect, load, or rely on skills outside that list. If another skill would normally trigger, mention it as not allowed and continue without it unless the task cannot be completed safely.
-- If a requested MCP or skill is not available in this opencode installation, stop before substantive work and report the invalid selection.
+- A comma-separated `allowed_skills` list is a user-provided allowlist. Use only skills whose names are in that list. Do not inspect, load, or rely on skills outside that list. If another skill would normally trigger, mention it as not allowed and continue without it unless the task cannot be completed safely.
+- If opencode reports that a requested MCP or skill is unavailable, stop before substantive work and report the invalid selection.
 
 3. Persist state before doing substantial work.
 - Ensure `.opencode/loop/` exists.

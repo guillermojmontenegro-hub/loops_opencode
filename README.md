@@ -127,13 +127,13 @@ That means normal opencode behavior. When you pass `--mcp` or `--skill`, `/loop`
 Allow only selected MCPs and skills:
 
 ```bash
-bin/run-opencode-loop.sh --mcp web_search --skill research-sourcing "objective"
+bin/run-opencode-loop.sh --mcp <mcp-name> --skill <skill-name> "objective"
 ```
 
 Allow several:
 
 ```bash
-bin/run-opencode-loop.sh --mcp web_search,playwright --skill research-sourcing --skill research-synthesis "objective"
+bin/run-opencode-loop.sh --mcp <mcp-a>,<mcp-b> --skill <skill-a> --skill <skill-b> "objective"
 ```
 
 Disable both:
@@ -145,7 +145,7 @@ bin/run-opencode-loop.sh --no-mcp --no-skills "local objective"
 Continue with the same selection:
 
 ```bash
-bin/run-opencode-loop.sh --continue --mcp web_search --skill research-sourcing
+bin/run-opencode-loop.sh --continue --mcp <mcp-name> --skill <skill-name>
 ```
 
 ## Loop State
