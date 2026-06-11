@@ -1,0 +1,13 @@
+{
+  "opencode_executable": "opencode",
+  "project_dir": ".",
+  "state_path": ".opencode/loop/state.md",
+  "runs_dir": ".opencode/loop/runs",
+  "default_max_iterations": 20,
+  "default_sleep_seconds": 1.0,
+  "default_output_format": "default",
+  "default_model": null,
+  "default_agent": null,
+  "default_attach_url": null,
+  "dangerously_skip_permissions": false
+}

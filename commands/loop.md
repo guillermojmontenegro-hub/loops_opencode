@@ -8,13 +8,13 @@ Run the loop protocol for a long-running objective.
 Arguments: `$ARGUMENTS`
 Current directory: !`pwd`
 Configured local model context windows:
-!`node -e 'const fs=require("fs"); const p="/home/guillermo/.config/opencode/opencode.json"; const c=JSON.parse(fs.readFileSync(p,"utf8")); for (const [provider,pc] of Object.entries(c.provider||{})) for (const [model,mc] of Object.entries(pc.models||{})) console.log(`${provider}/${model}: context=${mc.limit?.context ?? "unknown"} output=${mc.limit?.output ?? "unknown"}`)'`
+!`node -e 'const fs=require("fs"); const candidates=["opencode.json",".opencode/opencode.json","config/opencode.json"]; const p=candidates.find((x)=>fs.existsSync(x)); if(!p){ console.log("unknown (no relative opencode config found)"); process.exit(0); } const c=JSON.parse(fs.readFileSync(p,"utf8")); for (const [provider,pc] of Object.entries(c.provider||{})) for (const [model,mc] of Object.entries(pc.models||{})) console.log(`${provider}/${model}: context=${mc.limit?.context ?? "unknown"} output=${mc.limit?.output ?? "unknown"}`)'`
 
 Configured MCP servers:
-!`node -e 'const fs=require("fs"); const p="/home/guillermo/.config/opencode/opencode.json"; const c=JSON.parse(fs.readFileSync(p,"utf8")); for (const [name,mcp] of Object.entries(c.mcp||{})) console.log(`${name}: ${mcp.enabled === false || mcp.disabled === true ? "disabled" : "enabled"}`)'`
+!`node -e 'const fs=require("fs"); const candidates=["opencode.json",".opencode/opencode.json","config/opencode.json"]; const p=candidates.find((x)=>fs.existsSync(x)); if(!p){ console.log("unknown (no relative opencode config found)"); process.exit(0); } const c=JSON.parse(fs.readFileSync(p,"utf8")); for (const [name,mcp] of Object.entries(c.mcp||{})) console.log(`${name}: ${mcp.enabled === false || mcp.disabled === true ? "disabled" : "enabled"}`)'`
 
 Available local skills:
-!`find /home/guillermo/.config/opencode/skills /mnt/ssd_storage/ParaAgentes/.agents/skills -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort -u`
+!`find .opencode/skills .agents/skills skills -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort -u || true`
 
 Existing loop state, if any:
 !`mkdir -p .opencode/loop && test -f .opencode/loop/state.md && cat .opencode/loop/state.md || echo "no existing loop state"`

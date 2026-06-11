@@ -1,91 +1,143 @@
 # loops_opencode
 
-Runner para ejecutar objetivos largos en opencode usando sesiones nuevas y estado persistente.
+Portable runner for long opencode tasks. It runs `/loop` in fresh opencode sessions, stores continuity in project-local state files, and stops when the loop state is marked complete.
 
-## Qué incluye
+## Project Layout
 
-- `commands/loop.md`: comando `/loop` para opencode.
-- `scripts/opencode_loop_runner.py`: runner que ejecuta `/loop` en sesiones nuevas hasta que el estado quede `complete`.
-- `scripts/run_opencode_loop.sh`: wrapper que activa `./venv` y ejecuta el runner.
-
-## Instalación
-
-Copiar el comando a la configuración de opencode:
-
-```bash
-mkdir -p ~/.config/opencode/commands
-cp commands/loop.md ~/.config/opencode/commands/loop.md
+```text
+bin/
+  run-opencode-loop.sh
+  run-opencode-loop.bat
+commands/
+  loop.md
+config/
+  loop.config.example.json
+src/
+  loops_opencode/
+    cli.py
+    config.py
+    runner.py
 ```
 
-Copiar los scripts al proyecto donde se va a usar el loop:
+## Install
+
+Copy the command into your opencode commands directory:
 
 ```bash
-mkdir -p scripts
-cp scripts/opencode_loop_runner.py scripts/run_opencode_loop.sh ./scripts/
-chmod +x scripts/opencode_loop_runner.py scripts/run_opencode_loop.sh
+cp commands/loop.md <opencode-commands-dir>/loop.md
 ```
 
-El wrapper espera un entorno virtual local en `./venv`. Si preferís no usar wrapper:
+For Windows, copy `commands/loop.md` into your opencode commands directory.
+
+Create a local config from the example:
 
 ```bash
-python3 scripts/opencode_loop_runner.py "objetivo largo"
+cp config/loop.config.example.json config/loop.config.json
 ```
 
-## Uso
+Then edit `config/loop.config.json` if needed.
 
-Ejecutar un objetivo largo:
+## Configuration
+
+All defaults live in:
+
+```text
+config/loop.config.example.json
+```
+
+Recommended local override:
+
+```text
+config/loop.config.json
+```
+
+Config keys:
+
+```json
+{
+  "opencode_executable": "opencode",
+  "project_dir": ".",
+  "state_path": ".opencode/loop/state.md",
+  "runs_dir": ".opencode/loop/runs",
+  "default_max_iterations": 20,
+  "default_sleep_seconds": 1.0,
+  "default_output_format": "default",
+  "default_model": null,
+  "default_agent": null,
+  "default_attach_url": null,
+  "dangerously_skip_permissions": false
+}
+```
+
+Every path in the default config is relative. CLI arguments override config values.
+
+## Usage
+
+Linux/macOS:
 
 ```bash
-./scripts/run_opencode_loop.sh "objetivo largo"
+bin/run-opencode-loop.sh "objective"
 ```
 
-Continuar un loop existente:
+Windows:
+
+```bat
+bin\run-opencode-loop.bat "objective"
+```
+
+Continue an existing loop:
 
 ```bash
-./scripts/run_opencode_loop.sh --continue
+bin/run-opencode-loop.sh --continue
 ```
 
-Limitar iteraciones:
+Limit iterations:
 
 ```bash
-./scripts/run_opencode_loop.sh --max-iterations 10 "objetivo largo"
+bin/run-opencode-loop.sh --max-iterations 10 "objective"
 ```
 
-Probar sin iniciar sesiones:
+Dry run:
 
 ```bash
-./scripts/run_opencode_loop.sh --dry-run --max-iterations 2 "probar runner"
+bin/run-opencode-loop.sh --dry-run --max-iterations 2 "test runner"
 ```
 
-## MCPs y Skills
-
-Permitir solo ciertos MCPs y Skills:
+Run the Python module directly:
 
 ```bash
-./scripts/run_opencode_loop.sh --mcp web_search --skill research-sourcing "objetivo largo"
+PYTHONPATH=src python3 -m loops_opencode.cli "objective"
 ```
 
-Permitir varios:
+## MCPs And Skills
+
+Allow only selected MCPs and skills:
 
 ```bash
-./scripts/run_opencode_loop.sh --mcp web_search,playwright --skill research-sourcing --skill research-synthesis "objetivo largo"
+bin/run-opencode-loop.sh --mcp web_search --skill research-sourcing "objective"
 ```
 
-Deshabilitar MCPs y Skills:
+Allow several:
 
 ```bash
-./scripts/run_opencode_loop.sh --no-mcp --no-skills "objetivo local"
+bin/run-opencode-loop.sh --mcp web_search,playwright --skill research-sourcing --skill research-synthesis "objective"
 ```
 
-Continuar manteniendo la selección:
+Disable both:
 
 ```bash
-./scripts/run_opencode_loop.sh --continue --mcp web_search --skill research-sourcing
+bin/run-opencode-loop.sh --no-mcp --no-skills "local objective"
 ```
 
-## Estado persistente
+Continue with the same selection:
 
-El loop usa:
+```bash
+bin/run-opencode-loop.sh --continue --mcp web_search --skill research-sourcing
+```
+
+## Loop State
+
+The loop stores continuity in the target project:
 
 ```text
 .opencode/loop/state.md
@@ -93,14 +145,15 @@ El loop usa:
 .opencode/loop/runs/
 ```
 
-El runner termina cuando `state.md` contiene:
+The runner stops when `state.md` contains:
 
 ```text
 status: complete
 ```
 
-## Notas
+## Notes
 
-- Cada iteración usa `opencode run --command loop`, lo que crea una sesión nueva cuando no se pasa `--continue` ni `--session` a opencode.
-- La continuidad vive en `.opencode/loop/`, no en el contexto conversacional.
-- La selección de MCPs/Skills se aplica por protocolo del comando `/loop`; opencode CLI no expone flags nativos `--mcp` o `--skill`.
+- The runner uses `opencode run --command loop`.
+- Each iteration starts a fresh opencode session because the runner does not pass opencode `--continue` or `--session`.
+- Continuity lives in `.opencode/loop/`, not in chat context.
+- MCP and skill selection is enforced by the `/loop` command protocol. The opencode CLI does not currently expose native `--mcp` or `--skill` flags.
